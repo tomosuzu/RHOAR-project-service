@@ -1,1 +1,7 @@
-# RHOAR-project-service
+# ProjectService
+
+
+## Technology
+* Vert.x runtime
+* MongDB database
+* Unit tests.
