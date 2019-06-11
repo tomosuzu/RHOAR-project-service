@@ -131,7 +131,7 @@ public class ApiVerticleTest {
         }).when(projectService).getProject(eq("111111"),any());
 
         Async async = context.async();
-        vertx.createHttpClient().get(port, "localhost", "/project/111111", response -> {
+        vertx.createHttpClient().get(port, "localhost", "/projects/111111", response -> {
             assertThat(response.statusCode(), equalTo(200));
             assertThat(response.headers().get("Content-type"), equalTo("application/json"));
             response.bodyHandler(body -> {

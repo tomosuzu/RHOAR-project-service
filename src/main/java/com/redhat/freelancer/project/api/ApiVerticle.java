@@ -25,7 +25,7 @@ public class ApiVerticle extends AbstractVerticle {
 
         Router router = Router.router(vertx);
         router.get("/projects").handler(this::getProjects);
-        router.get("/project/:projectId").handler(this::getProject);
+        router.get("/projects/:projectId").handler(this::getProject);
         router.get("/projects/status/:status").handler(this::getStatus);
         router.route("/project").handler(BodyHandler.create());
         router.post("/project").handler(this::addProject);
