@@ -35,17 +35,35 @@ public class ProjectServiceImpl implements ProjectService {
     }
 
     @Override
-    public void getProject(String projectId, Handler<AsyncResult<Project>> resulthandler) {
+    public void getProject(String projectId, Handler<AsyncResult<List<Project>>> resulthandler) {
         JsonObject query = new JsonObject().put("projectId", projectId);
 
-        resultHandlerForFilter(query, resulthandler);
+        client.find("projects", query, ar -> {
+            if (ar.succeeded()) {
+                List<Project> Projects = ar.result().stream()
+                        .map(json -> new Project(json))
+                        .collect(Collectors.toList());
+                resulthandler.handle(Future.succeededFuture(Projects));
+            } else {
+                resulthandler.handle(Future.failedFuture(ar.cause()));
+            }
+        });
     }
 
     @Override
-    public void getStatus(String status, Handler<AsyncResult<Project>> resulthandler) {
+    public void getStatus(String status, Handler<AsyncResult<List<Project>>> resulthandler) {
         JsonObject query = new JsonObject().put("status", status);
 
-        resultHandlerForFilter(query, resulthandler);
+        client.find("projects", query, ar -> {
+            if (ar.succeeded()) {
+                List<Project> Projects = ar.result().stream()
+                        .map(json -> new Project(json))
+                        .collect(Collectors.toList());
+                resulthandler.handle(Future.succeededFuture(Projects));
+            } else {
+                resulthandler.handle(Future.failedFuture(ar.cause()));
+            }
+        });
     }
 
     @Override
@@ -59,18 +77,4 @@ public class ProjectServiceImpl implements ProjectService {
         return document;
     }
 
-    private void resultHandlerForFilter(JsonObject query, Handler<AsyncResult<Project>> resulthandler){
-        client.find("projects", query, ar -> {
-            if (ar.succeeded()) {
-                Optional<JsonObject> result = ar.result().stream().findFirst();
-                if (result.isPresent()) {
-                    resulthandler.handle(Future.succeededFuture(new Project(result.get())));
-                } else {
-                    resulthandler.handle(Future.succeededFuture(null));
-                }
-            } else {
-                resulthandler.handle(Future.failedFuture(ar.cause()));
-            }
-        });
-    }
 }

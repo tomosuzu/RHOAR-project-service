@@ -112,20 +112,21 @@ public class ApiVerticleTest {
 
     @Test
     public void testGetProject(TestContext context) throws Exception {
-        String projectId = "111111";
-        JsonObject json = new JsonObject()
-                .put("projectId", projectId)
+        String projectId1 = "111111";
+        JsonObject json1 = new JsonObject()
+                .put("projectId", projectId1)
                 .put("firstName", "firstName1")
-                .put("lastName",  "lastName1")
-                .put("emailAddress",  "emailAddress1")
-                .put("title",  "title1")
+                .put("lastName", "lastName1")
+                .put("emailAddress", "emailAddress1")
+                .put("title", "title1")
                 .put("desc", "description1")
                 .put("status", "open");
-        Project project = new Project(json);
+        List<Project> projects = new ArrayList<>();
+        projects.add(new Project(json1));
         doAnswer(new Answer<Void>() {
-            public Void answer(InvocationOnMock invocation){
-                Handler<AsyncResult<Project>> handler = invocation.getArgument(1);
-                handler.handle(Future.succeededFuture(project));
+            public Void answer(InvocationOnMock invocation) {
+                Handler<AsyncResult<List<Project>>> handler = invocation.getArgument(1);
+                handler.handle(Future.succeededFuture(projects));
                 return null;
             }
         }).when(projectService).getProject(eq("111111"),any());
@@ -135,10 +136,13 @@ public class ApiVerticleTest {
             assertThat(response.statusCode(), equalTo(200));
             assertThat(response.headers().get("Content-type"), equalTo("application/json"));
             response.bodyHandler(body -> {
-                JsonObject result = body.toJsonObject();
-                assertThat(result, notNullValue());
-                assertThat(result.containsKey("projectId"), is(true));
-                assertThat(result.getString("projectId"), equalTo("111111"));
+                JsonArray json = body.toJsonArray();
+                Set<String> itemIds = json.stream()
+                        .map(j -> new Project((JsonObject) j))
+                        .map(p -> p.getProjectId())
+                        .collect(Collectors.toSet());
+                assertThat(itemIds.size(), equalTo(1));
+                assertThat(itemIds, allOf(hasItem(projectId1)));
                 verify(projectService).getProject(eq("111111"),any());
                 async.complete();
             })
@@ -150,20 +154,32 @@ public class ApiVerticleTest {
 
     @Test
     public void testGetStatus(TestContext context) throws Exception {
-        String status = "open";
-        JsonObject json = new JsonObject()
-                .put("projectId", "111111")
+        String projectId1 = "111111";
+        JsonObject json1 = new JsonObject()
+                .put("projectId", projectId1)
                 .put("firstName", "firstName1")
-                .put("lastName",  "lastName1")
-                .put("emailAddress",  "emailAddress1")
-                .put("title",  "title1")
+                .put("lastName", "lastName1")
+                .put("emailAddress", "emailAddress1")
+                .put("title", "title1")
                 .put("desc", "description1")
-                .put("status", status);
-        Project project = new Project(json);
+                .put("status", "open");
+        String projectId2 = "222222";
+        JsonObject json2 = new JsonObject()
+                .put("projectId", projectId2)
+                .put("firstName", "firstName2")
+                .put("lastName", "lastName2")
+                .put("emailAddress", "emailAddress2")
+                .put("title", "title2")
+                .put("desc", "description2")
+                .put("status", "open");
+
+        List<Project> projects = new ArrayList<>();
+        projects.add(new Project(json1));
+        projects.add(new Project(json2));
         doAnswer(new Answer<Void>() {
-            public Void answer(InvocationOnMock invocation){
-                Handler<AsyncResult<Project>> handler = invocation.getArgument(1);
-                handler.handle(Future.succeededFuture(project));
+            public Void answer(InvocationOnMock invocation) {
+                Handler<AsyncResult<List<Project>>> handler = invocation.getArgument(1);
+                handler.handle(Future.succeededFuture(projects));
                 return null;
             }
         }).when(projectService).getStatus(eq("open"),any());
@@ -173,11 +189,14 @@ public class ApiVerticleTest {
             assertThat(response.statusCode(), equalTo(200));
             assertThat(response.headers().get("Content-type"), equalTo("application/json"));
             response.bodyHandler(body -> {
-                JsonObject result = body.toJsonObject();
-                assertThat(result, notNullValue());
-                assertThat(result.containsKey("status"), is(true));
-                assertThat(result.getString("status"), equalTo("open"));
-                verify(projectService).getStatus(eq("open"),any());
+                JsonArray json = body.toJsonArray();
+                Set<String> itemIds = json.stream()
+                        .map(j -> new Project((JsonObject) j))
+                        .map(p -> p.getProjectId())
+                        .collect(Collectors.toSet());
+                assertThat(itemIds.size(), equalTo(2));
+                assertThat(itemIds, allOf(hasItem(projectId1), hasItem(projectId2)));
+                verify(projectService).getStatus(eq("open"), any());
                 async.complete();
             })
                     .exceptionHandler(context.exceptionHandler());

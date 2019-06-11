@@ -61,14 +61,36 @@ public class ApiVerticle extends AbstractVerticle {
     private void getProject(RoutingContext rc) {
         String projectId = rc.request().getParam("projectId");
         projectService.getProject(projectId, ar -> {
-            CallbackForFilter(ar, rc);
+            if (ar.succeeded()) {
+                List<Project> projects = ar.result();
+                JsonArray json = new JsonArray();
+                projects.stream()
+                        .map(p -> p.toJson())
+                        .forEach(p -> json.add(p));
+                rc.response()
+                        .putHeader("Content-type", "application/json")
+                        .end(json.encodePrettily());
+            } else {
+                rc.fail(ar.cause());
+            }
         });
     }
 
     private void getStatus(RoutingContext rc) {
         String status = rc.request().getParam("status");
         projectService.getStatus(status, ar -> {
-            CallbackForFilter(ar, rc);
+            if (ar.succeeded()) {
+                List<Project> projects = ar.result();
+                JsonArray json = new JsonArray();
+                projects.stream()
+                        .map(p -> p.toJson())
+                        .forEach(p -> json.add(p));
+                rc.response()
+                        .putHeader("Content-type", "application/json")
+                        .end(json.encodePrettily());
+            } else {
+                rc.fail(ar.cause());
+            }
         });
     }
 
@@ -81,22 +103,5 @@ public class ApiVerticle extends AbstractVerticle {
                 rc.fail(ar.cause());
             }
         });
-    }
-
-    private void CallbackForFilter(AsyncResult<Project> ar, RoutingContext rc) {
-        if (ar.succeeded()) {
-            Project project = ar.result();
-            JsonObject json;
-            if (project != null) {
-                json = project.toJson();
-                rc.response()
-                        .putHeader("Content-type", "application/json")
-                        .end(json.encodePrettily());
-            } else {
-                rc.fail(404);
-            }
-        } else {
-            rc.fail(ar.cause());
-        }
     }
 }

@@ -25,9 +25,9 @@ public interface ProjectService {
 
     void getProjects(Handler<AsyncResult<List<Project>>> resulthandler);
 
-    void getProject(String projectId, Handler<AsyncResult<Project>> resulthandler);
+    void getProject(String projectId, Handler<AsyncResult<List<Project>>> resulthandler);
 
-    void getStatus(String status, Handler<AsyncResult<Project>> resulthandler);
+    void getStatus(String status, Handler<AsyncResult<List<Project>>> resulthandler);
 
     void addProject(Project project, Handler<AsyncResult<String>> resulthandler);
 }
