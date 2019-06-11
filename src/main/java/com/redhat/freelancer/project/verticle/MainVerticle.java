@@ -19,11 +19,13 @@ public class MainVerticle extends AbstractVerticle {
 
         ConfigStoreOptions jsonConfigStore = new ConfigStoreOptions().setType("json");
         ConfigStoreOptions appStore = new ConfigStoreOptions()
-                .setType("configmap")
-                .setFormat("yaml")
+                .setType("json")
                 .setConfig(new JsonObject()
-                        .put("name", System.getenv("APP_CONFIGMAP_NAME"))
-                        .put("key", System.getenv("APP_CONFIGMAP_KEY")));
+                        .put("project.http.port", 8080)
+                        .put("db_name",           "projectdb")
+                        .put("username",          "mongo")
+                        .put("password",          "mongo")
+                        .put("connection_string", "mongodb://project-mongodb:27017"));
 
         ConfigRetrieverOptions options = new ConfigRetrieverOptions();
         if (System.getenv("KUBERNETES_NAMESPACE") != null) {

@@ -14,7 +14,7 @@ public class Project implements Serializable  {
     private String projectId;
     private String firstName;
     private String lastName;
-    private String emailAdress;
+    private String emailAddress;
     private String title;
     private String desc;
     private String status;
@@ -30,7 +30,7 @@ public class Project implements Serializable  {
         this.projectId   = json.getString("projectId");
         this.firstName   = json.getString("firstName");
         this.lastName    = json.getString("lastName");
-        this.emailAdress = json.getString("emailAdress");
+        this.emailAddress = json.getString("emailAddress");
         this.title       = json.getString("title");
         this.desc        = json.getString("desc");
         this.status      = json.getString("status");
@@ -42,7 +42,7 @@ public class Project implements Serializable  {
         json.put("projectId",   this.projectId  );
         json.put("firstName",   this.firstName  );
         json.put("lastName",    this.lastName   );
-        json.put("emailAdress", this.emailAdress);
+        json.put("emailAddress", this.emailAddress);
         json.put("title",       this.title      );
         json.put("desc",        this.desc       );
         json.put("status",      this.status     );

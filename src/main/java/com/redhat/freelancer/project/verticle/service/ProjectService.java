@@ -19,15 +19,13 @@ public interface ProjectService {
         return new ProjectServiceImpl(vertx, config, client);
     }
 
-    // todo something
     static ProjectService createProxy(Vertx vertx) {
         return new ProjectServiceVertxEBProxy(vertx, ADDRESS);
     }
 
     void getProjects(Handler<AsyncResult<List<Project>>> resulthandler);
 
-//    void getProject(String itemId, Handler<AsyncResult<Project>> resulthandler);
-//
-//    void addProject(Project project, Handler<AsyncResult<String>> resulthandler);
+    void getProject(String projectId, Handler<AsyncResult<Project>> resulthandler);
 
+    void addProject(Project project, Handler<AsyncResult<String>> resulthandler);
 }

@@ -5,7 +5,7 @@ import com.redhat.freelancer.project.verticle.service.ProjectService;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
-import io.vertx.ext.healthchecks.HealthCheckHandler;
+import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -24,15 +24,9 @@ public class ApiVerticle extends AbstractVerticle {
 
         Router router = Router.router(vertx);
         router.get("/projects").handler(this::getProjects);
-//        router.get("/project/:itemId").handler(this::getProject);
-//        router.route("/project").handler(BodyHandler.create());
-//        router.post("/project").handler(this::addProject);
-
-        //Health Checks
-//        router.get("/health/readiness").handler(rc -> rc.response().end("OK"));
-//        HealthCheckHandler healthCheckHandler = HealthCheckHandler.create(vertx)
-//                .register("health", f -> health(f));
-//        router.get("/health/liveness").handler(healthCheckHandler);
+        router.get("/project/:projectId").handler(this::getProject);
+        router.route("/project").handler(BodyHandler.create());
+        router.post("/project").handler(this::addProject);
 
         vertx.createHttpServer()
                 .requestHandler(router::accept)
@@ -62,4 +56,34 @@ public class ApiVerticle extends AbstractVerticle {
         });
     }
 
+    private void getProject(RoutingContext rc) {
+        String projectId = rc.request().getParam("projectId");
+        projectService.getProject(projectId, ar -> {
+            if (ar.succeeded()) {
+                Project project = ar.result();
+                JsonObject json;
+                if (project != null) {
+                    json = project.toJson();
+                    rc.response()
+                            .putHeader("Content-type", "application/json")
+                            .end(json.encodePrettily());
+                } else {
+                    rc.fail(404);
+                }
+            } else {
+                rc.fail(ar.cause());
+            }
+        });
+    }
+
+    private void addProject(RoutingContext rc) {
+        JsonObject json = rc.getBodyAsJson();
+        projectService.addProject(new Project(json), ar -> {
+            if (ar.succeeded()) {
+                rc.response().setStatusCode(201).end();
+            } else {
+                rc.fail(ar.cause());
+            }
+        });
+    }
 }

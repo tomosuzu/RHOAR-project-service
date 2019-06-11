@@ -8,9 +8,11 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.unit.Async;
 import io.vertx.ext.unit.TestContext;
 import io.vertx.ext.unit.junit.VertxUnitRunner;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -61,18 +63,18 @@ public class ApiVerticleTest {
         JsonObject json1 = new JsonObject()
                 .put("projectId", projectId1)
                 .put("firstName", "firstName1")
-                .put("lastName",  "lastName1")
-                .put("emailAdress",  "emailAdress1")
-                .put("title",  "title1")
+                .put("lastName", "lastName1")
+                .put("emailAddress", "emailAddress1")
+                .put("title", "title1")
                 .put("desc", "description1")
                 .put("status", "open");
         String projectId2 = "222222";
         JsonObject json2 = new JsonObject()
                 .put("projectId", projectId2)
                 .put("firstName", "firstName2")
-                .put("lastName",  "lastName2")
-                .put("emailAdress",  "emailAdress2")
-                .put("title",  "title2")
+                .put("lastName", "lastName2")
+                .put("emailAddress", "emailAddress2")
+                .put("title", "title2")
                 .put("desc", "description2")
                 .put("status", "in_progress");
 
@@ -80,7 +82,7 @@ public class ApiVerticleTest {
         projects.add(new Project(json1));
         projects.add(new Project(json2));
         doAnswer(new Answer<Void>() {
-            public Void answer(InvocationOnMock invocation){
+            public Void answer(InvocationOnMock invocation) {
                 Handler<AsyncResult<List<Project>>> handler = invocation.getArgument(0);
                 handler.handle(Future.succeededFuture(projects));
                 return null;
@@ -93,12 +95,12 @@ public class ApiVerticleTest {
             assertThat(response.headers().get("Content-type"), equalTo("application/json"));
             response.bodyHandler(body -> {
                 JsonArray json = body.toJsonArray();
-                Set<String> itemIds =  json.stream()
-                        .map(j -> new Project((JsonObject)j))
+                Set<String> itemIds = json.stream()
+                        .map(j -> new Project((JsonObject) j))
                         .map(p -> p.getProjectId())
                         .collect(Collectors.toSet());
                 assertThat(itemIds.size(), equalTo(2));
-                assertThat(itemIds, allOf(hasItem(projectId1),hasItem(projectId2)));
+                assertThat(itemIds, allOf(hasItem(projectId1), hasItem(projectId2)));
                 verify(projectService).getProjects(any());
                 async.complete();
             })
@@ -107,4 +109,85 @@ public class ApiVerticleTest {
                 .exceptionHandler(context.exceptionHandler())
                 .end();
     }
+
+    @Test
+    public void testGetProject(TestContext context) throws Exception {
+        String projectId = "111111";
+        JsonObject json = new JsonObject()
+                .put("projectId", projectId)
+                .put("firstName", "firstName1")
+                .put("lastName",  "lastName1")
+                .put("emailAddress",  "emailAddress1")
+                .put("title",  "title1")
+                .put("desc", "description1")
+                .put("status", "open");
+        Project project = new Project(json);
+        doAnswer(new Answer<Void>() {
+            public Void answer(InvocationOnMock invocation){
+                Handler<AsyncResult<Project>> handler = invocation.getArgument(1);
+                handler.handle(Future.succeededFuture(project));
+                return null;
+            }
+        }).when(projectService).getProject(eq("111111"),any());
+
+        Async async = context.async();
+        vertx.createHttpClient().get(port, "localhost", "/project/111111", response -> {
+            assertThat(response.statusCode(), equalTo(200));
+            assertThat(response.headers().get("Content-type"), equalTo("application/json"));
+            response.bodyHandler(body -> {
+                JsonObject result = body.toJsonObject();
+                assertThat(result, notNullValue());
+                assertThat(result.containsKey("projectId"), is(true));
+                assertThat(result.getString("projectId"), equalTo("111111"));
+                verify(projectService).getProject(eq("111111"),any());
+                async.complete();
+            })
+                    .exceptionHandler(context.exceptionHandler());
+        })
+                .exceptionHandler(context.exceptionHandler())
+                .end();
+    }
+
+    @Test
+    public void testAddProject(TestContext context) throws Exception {
+        doAnswer(new Answer<Void>() {
+            public Void answer(InvocationOnMock invocation){
+                Handler<AsyncResult<String>> handler = invocation.getArgument(1);
+                handler.handle(Future.succeededFuture(null));
+                return null;
+            }
+        }).when(projectService).addProject(any(),any());
+
+        Async async = context.async();
+        String projectId = "111111";
+        JsonObject json = new JsonObject()
+                .put("projectId", projectId)
+                .put("firstName", "firstName1")
+                .put("lastName",  "lastName1")
+                .put("emailAddress",  "emailAddress1")
+                .put("title",  "title1")
+                .put("desc", "description1")
+                .put("status", "open");
+        String body = json.encodePrettily();
+        String length = Integer.toString(body.length());
+        vertx.createHttpClient().post(port, "localhost", "/project")
+                .exceptionHandler(context.exceptionHandler())
+                .putHeader("Content-type", "application/json")
+                .putHeader("Content-length", length)
+                .handler(response -> {
+                    assertThat(response.statusCode(), equalTo(201));
+                    ArgumentCaptor<Project> argument = ArgumentCaptor.forClass(Project.class);
+                    verify(projectService).addProject(argument.capture(), any());
+                    assertThat(argument.getValue().getProjectId(), equalTo(projectId));
+                    async.complete();
+                })
+                .write(body)
+                .end();
+    }
+
+    @After
+    public void tearDown(TestContext context) {
+        vertx.close(context.asyncAssertSuccess());
+    }
+
 }
