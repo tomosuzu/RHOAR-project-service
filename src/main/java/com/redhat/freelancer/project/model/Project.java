@@ -18,9 +18,6 @@ public class Project implements Serializable  {
     private String title;
     private String desc;
     private String status;
-    public enum statusEnum{
-        open, in_progress, completed, cancelled;
-    }
 
     public String getProjectId() {
         return projectId;
