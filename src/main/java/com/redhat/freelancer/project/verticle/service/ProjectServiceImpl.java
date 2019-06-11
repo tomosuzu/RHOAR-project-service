@@ -37,37 +37,15 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public void getProject(String projectId, Handler<AsyncResult<Project>> resulthandler) {
         JsonObject query = new JsonObject().put("projectId", projectId);
-        client.find("projects", query, ar -> {
-            if (ar.succeeded()) {
-                Optional<JsonObject> result = ar.result().stream().findFirst();
-                if (result.isPresent()) {
-                    resulthandler.handle(Future.succeededFuture(new Project(result.get())));
-                } else {
-                    resulthandler.handle(Future.succeededFuture(null));
-                }
-            } else {
-                resulthandler.handle(Future.failedFuture(ar.cause()));
-            }
-        });
+
+        resultHandlerForFilter(query, resulthandler);
     }
 
     @Override
     public void getStatus(String status, Handler<AsyncResult<Project>> resulthandler) {
         JsonObject query = new JsonObject().put("status", status);
 
-        //todo refactor : deplicated
-        client.find("projects", query, ar -> {
-            if (ar.succeeded()) {
-                Optional<JsonObject> result = ar.result().stream().findFirst();
-                if (result.isPresent()) {
-                    resulthandler.handle(Future.succeededFuture(new Project(result.get())));
-                } else {
-                    resulthandler.handle(Future.succeededFuture(null));
-                }
-            } else {
-                resulthandler.handle(Future.failedFuture(ar.cause()));
-            }
-        });
+        resultHandlerForFilter(query, resulthandler);
     }
 
     @Override
@@ -79,5 +57,20 @@ public class ProjectServiceImpl implements ProjectService {
         JsonObject document = product.toJson();
         document.put("_id", product.getProjectId());
         return document;
+    }
+
+    private void resultHandlerForFilter(JsonObject query, Handler<AsyncResult<Project>> resulthandler){
+        client.find("projects", query, ar -> {
+            if (ar.succeeded()) {
+                Optional<JsonObject> result = ar.result().stream().findFirst();
+                if (result.isPresent()) {
+                    resulthandler.handle(Future.succeededFuture(new Project(result.get())));
+                } else {
+                    resulthandler.handle(Future.succeededFuture(null));
+                }
+            } else {
+                resulthandler.handle(Future.failedFuture(ar.cause()));
+            }
+        });
     }
 }

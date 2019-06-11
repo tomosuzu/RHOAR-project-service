@@ -3,6 +3,7 @@ package com.redhat.freelancer.project.api;
 import com.redhat.freelancer.project.model.Project;
 import com.redhat.freelancer.project.verticle.service.ProjectService;
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -60,41 +61,14 @@ public class ApiVerticle extends AbstractVerticle {
     private void getProject(RoutingContext rc) {
         String projectId = rc.request().getParam("projectId");
         projectService.getProject(projectId, ar -> {
-            if (ar.succeeded()) {
-                Project project = ar.result();
-                JsonObject json;
-                if (project != null) {
-                    json = project.toJson();
-                    rc.response()
-                            .putHeader("Content-type", "application/json")
-                            .end(json.encodePrettily());
-                } else {
-                    rc.fail(404);
-                }
-            } else {
-                rc.fail(ar.cause());
-            }
+            CallbackForFilter(ar, rc);
         });
     }
 
     private void getStatus(RoutingContext rc) {
         String status = rc.request().getParam("status");
-        // todo refactor : deplicated
         projectService.getStatus(status, ar -> {
-            if (ar.succeeded()) {
-                Project project = ar.result();
-                JsonObject json;
-                if (project != null) {
-                    json = project.toJson();
-                    rc.response()
-                            .putHeader("Content-type", "application/json")
-                            .end(json.encodePrettily());
-                } else {
-                    rc.fail(404);
-                }
-            } else {
-                rc.fail(ar.cause());
-            }
+            CallbackForFilter(ar, rc);
         });
     }
 
@@ -107,5 +81,22 @@ public class ApiVerticle extends AbstractVerticle {
                 rc.fail(ar.cause());
             }
         });
+    }
+
+    private void CallbackForFilter(AsyncResult<Project> ar, RoutingContext rc) {
+        if (ar.succeeded()) {
+            Project project = ar.result();
+            JsonObject json;
+            if (project != null) {
+                json = project.toJson();
+                rc.response()
+                        .putHeader("Content-type", "application/json")
+                        .end(json.encodePrettily());
+            } else {
+                rc.fail(404);
+            }
+        } else {
+            rc.fail(ar.cause());
+        }
     }
 }
