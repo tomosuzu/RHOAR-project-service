@@ -16,41 +16,29 @@
 
 ## Explain my design
 
-* model 
-
-I create all parameters as string variable.
+This endpoint should reply all projects and these information.
+This and below "get" endpoints are similar and should be same response structure.
+If it's different, User should change handlers per endpoint. 
 
 * get '/projects'
-
-This endpoint should reply all projects and these information.
-
-sample request
 ```$sh
 $ curl http://project-service-tosuzuki-freelancer.apps.na311.openshift.opentlc.com/projects
 ```
-
 * get '/project/:projectId'
-The endpoint search a project from projectId.
-
-sample request
 ```$sh
 $ curl http://project-service-tosuzuki-freelancer.apps.na311.openshift.opentlc.com/projects/111111
 
 ```
-
 * get '/projects/status/:status'
-This endpoint is similar to projectId filter endpoint.
-So, I refactored it to be common function.
-
-sample request
 ```$sh
 $ curl http://project-service-tosuzuki-freelancer.apps.na311.openshift.opentlc.com/projects/status/open
 ```
 
-* post '/project'
+
 I create it for test. So I make this public.
 But If you don't want it to be public, I can hide this.
 
+* post '/project'
 sample request
 ```$sh
 $ curl http://project-service-tosuzuki-freelancer.apps.na311.openshift.opentlc.com/project -X POST -H "Content-Type: application/json" -d '{     "projectId": "111114",     "firstName": "firstName4",     "lastName": "lastName4",     "emailAddress": "emailAdress4",     "title": "title4",     "desc": "description4",     "status": "cancelled" }'
