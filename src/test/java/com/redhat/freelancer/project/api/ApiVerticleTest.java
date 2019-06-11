@@ -149,6 +149,44 @@ public class ApiVerticleTest {
     }
 
     @Test
+    public void testGetStatus(TestContext context) throws Exception {
+        String status = "open";
+        JsonObject json = new JsonObject()
+                .put("projectId", "111111")
+                .put("firstName", "firstName1")
+                .put("lastName",  "lastName1")
+                .put("emailAddress",  "emailAddress1")
+                .put("title",  "title1")
+                .put("desc", "description1")
+                .put("status", status);
+        Project project = new Project(json);
+        doAnswer(new Answer<Void>() {
+            public Void answer(InvocationOnMock invocation){
+                Handler<AsyncResult<Project>> handler = invocation.getArgument(1);
+                handler.handle(Future.succeededFuture(project));
+                return null;
+            }
+        }).when(projectService).getStatus(eq("open"),any());
+
+        Async async = context.async();
+        vertx.createHttpClient().get(port, "localhost", "/projects/status/open", response -> {
+            assertThat(response.statusCode(), equalTo(200));
+            assertThat(response.headers().get("Content-type"), equalTo("application/json"));
+            response.bodyHandler(body -> {
+                JsonObject result = body.toJsonObject();
+                assertThat(result, notNullValue());
+                assertThat(result.containsKey("status"), is(true));
+                assertThat(result.getString("status"), equalTo("open"));
+                verify(projectService).getStatus(eq("open"),any());
+                async.complete();
+            })
+                    .exceptionHandler(context.exceptionHandler());
+        })
+                .exceptionHandler(context.exceptionHandler())
+                .end();
+    }
+
+    @Test
     public void testAddProject(TestContext context) throws Exception {
         doAnswer(new Answer<Void>() {
             public Void answer(InvocationOnMock invocation){

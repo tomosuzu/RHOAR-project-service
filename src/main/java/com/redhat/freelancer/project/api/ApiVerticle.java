@@ -25,6 +25,7 @@ public class ApiVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
         router.get("/projects").handler(this::getProjects);
         router.get("/project/:projectId").handler(this::getProject);
+        router.get("/projects/status/:status").handler(this::getStatus);
         router.route("/project").handler(BodyHandler.create());
         router.post("/project").handler(this::addProject);
 
@@ -59,6 +60,27 @@ public class ApiVerticle extends AbstractVerticle {
     private void getProject(RoutingContext rc) {
         String projectId = rc.request().getParam("projectId");
         projectService.getProject(projectId, ar -> {
+            if (ar.succeeded()) {
+                Project project = ar.result();
+                JsonObject json;
+                if (project != null) {
+                    json = project.toJson();
+                    rc.response()
+                            .putHeader("Content-type", "application/json")
+                            .end(json.encodePrettily());
+                } else {
+                    rc.fail(404);
+                }
+            } else {
+                rc.fail(ar.cause());
+            }
+        });
+    }
+
+    private void getStatus(RoutingContext rc) {
+        String status = rc.request().getParam("status");
+        // todo refactor : deplicated
+        projectService.getStatus(status, ar -> {
             if (ar.succeeded()) {
                 Project project = ar.result();
                 JsonObject json;
