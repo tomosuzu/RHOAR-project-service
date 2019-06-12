@@ -16,9 +16,10 @@
 
 ## Explain my design
 
-This endpoint should reply all projects and these information.
-This and below "get" endpoints are similar and should be same response structure.
-If it's different, User should change handlers per endpoint. 
+The "/projects" endpoint should reply all projects and these information.
+This and other "get" endpoints are similar and should be same response structure.
+If it's different, User should change handlers per endpoint.
+So, I created common function.
 
 * get '/projects'
 ```$sh
@@ -27,15 +28,15 @@ $ curl http://project-service-tosuzuki-freelancer.apps.na311.openshift.opentlc.c
 * get '/project/:projectId'
 ```$sh
 $ curl http://project-service-tosuzuki-freelancer.apps.na311.openshift.opentlc.com/projects/111111
-
 ```
 * get '/projects/status/:status'
 ```$sh
 $ curl http://project-service-tosuzuki-freelancer.apps.na311.openshift.opentlc.com/projects/status/open
 ```
 
+## Appendix
 
-I create it for test. So I make this public.
+I create add method for test. So I make this public.
 But If you don't want it to be public, I can hide this.
 
 * post '/project'
