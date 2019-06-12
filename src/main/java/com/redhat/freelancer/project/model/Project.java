@@ -1,11 +1,8 @@
 package com.redhat.freelancer.project.model;
 
 import java.io.Serializable;
-import java.util.List;
 
 import io.vertx.codegen.annotations.DataObject;
-import io.vertx.core.AsyncResult;
-import io.vertx.core.Handler;
 import io.vertx.core.json.JsonObject;
 
 @DataObject
